@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -27,11 +27,10 @@ services:
     volumes:
       - redisdata:/data
 
-  url-shortener:
+  url:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: url-shortener
+    container_name: url
     restart: unless-stopped
     depends_on:
       postgres:
@@ -44,9 +43,9 @@ services:
     ports:
       - "8080:8080"
 
-  dns-shortener:
+  dns:
     image: coredns/coredns:1.14.7
-    container_name: dns-shortener
+    container_name: dns
     restart: unless-stopped
     volumes:
       - ./Corefile:/Corefile
