@@ -18,7 +18,7 @@ migrate-down:
 		$(IMAGE) -path /migrations -database "$(URL)" down 1
 
 up:
-	$(COMPOSE) up -d --no-deps redis dns url
+	$(COMPOSE) up -d
 
 down:
 	$(COMPOSE) down
