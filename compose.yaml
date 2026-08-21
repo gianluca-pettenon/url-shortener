@@ -18,6 +18,15 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:8.8.2-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
   url-shortener:
     build:
       context: .
@@ -27,6 +36,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       DATABASE_URL: postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_DB?sslmode=disable
       APP_DOMAIN: shortener.local
@@ -46,3 +57,4 @@ services:
 
 volumes:
   pgdata:
+  redisdata:
