@@ -1,0 +1,9 @@
+shortener.local:53 {
+    hosts {
+        127.0.0.1 shortener.local
+        fallthrough
+    }
+    forward . 8.8.8.8 8.8.4.4
+    log
+    errors
+}
