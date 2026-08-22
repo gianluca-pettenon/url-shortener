@@ -43,3 +43,30 @@ func (r *Repository) GetByID(ctx context.Context, id uint64) (URL, error) {
 
 	return u, nil
 }
+
+func (r *Repository) List(ctx context.Context) ([]URL, error) {
+	rows, err := r.pool.Query(ctx, `SELECT id, original_url, created_at FROM urls ORDER BY created_at DESC`)
+
+	if err != nil {
+		return nil, fmt.Errorf("List URLs: %w", err)
+	}
+
+	defer rows.Close()
+
+	var list []URL
+	for rows.Next() {
+		var u URL
+
+		if err := rows.Scan(&u.ID, &u.OriginalURL, &u.CreatedAt); err != nil {
+			return nil, fmt.Errorf("List URLs: %w", err)
+		}
+
+		list = append(list, u)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("List URLs: %w", err)
+	}
+
+	return list, nil
+}

@@ -60,6 +60,10 @@ func (s *Service) Resolve(ctx context.Context, code string) (string, error) {
 	return u.OriginalURL, nil
 }
 
+func (s *Service) List(ctx context.Context) ([]URL, error) {
+	return s.repo.List(ctx)
+}
+
 func normalizeURL(raw string) (string, error) {
 	u, err := url.ParseRequestURI(strings.TrimSpace(raw))
 
