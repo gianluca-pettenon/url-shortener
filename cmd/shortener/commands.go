@@ -61,7 +61,7 @@ func listCmd() *cobra.Command {
 			}
 
 			if len(items) == 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "no shortened URLs")
+				fmt.Fprintln(cmd.OutOrStdout(), "No shortened URLs")
 				return nil
 			}
 
