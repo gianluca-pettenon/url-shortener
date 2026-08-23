@@ -29,20 +29,22 @@ services:
       - redisdata:/data
 
   url:
+    container_name: url
     build:
       context: .
-    container_name: url
-    restart: unless-stopped
+    profiles: ["cli"]
+    stdin_open: true
+    tty: true
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
     environment:
-      DATABASE_URL: postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_DB?sslmode=disable
+      DATABASE_URL: postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:$POSTGRES_PORT/$POSTGRES_DB?sslmode=disable
+      REDIS_URL: $REDIS_URL
+      HASHIDS_SALT: $HASHIDS_SALT
       APP_DOMAIN: shortener.local
-    ports:
-      - "8080:8080"
 
   dns:
     image: coredns/coredns:1.14.7

@@ -3,13 +3,14 @@ package hashid
 import (
 	"fmt"
 
+	"github.com/gianluca-pettenon/url-shortener/internal/base62"
 	"github.com/speps/go-hashids/v2"
 )
 
 func newHasher(salt string) (*hashids.HashID, error) {
 	data := hashids.NewData()
 	data.Salt = salt
-	data.MinLength = 8
+	data.MinLength = 4
 
 	return hashids.NewWithData(data)
 }
@@ -21,13 +22,13 @@ func Encode(base62Value, salt string) (string, error) {
 		return "", fmt.Errorf("HashID: %w", err)
 	}
 
-	nums := make([]int, len(base62Value))
+	id, err := base62.Decode(base62Value)
 
-	for i := 0; i < len(base62Value); i++ {
-		nums[i] = int(base62Value[i])
+	if err != nil {
+		return "", fmt.Errorf("HashID encode: %w", err)
 	}
 
-	code, err := hd.Encode(nums)
+	code, err := hd.Encode([]int{int(id)})
 
 	if err != nil {
 		return "", fmt.Errorf("HashID encode: %w", err)
@@ -49,16 +50,9 @@ func Decode(code, salt string) (string, error) {
 		return "", fmt.Errorf("HashID decode: %w", err)
 	}
 
-	out := make([]byte, len(nums))
-
-	for i, n := range nums {
-
-		if n < 0 || n > 255 {
-			return "", fmt.Errorf("HashID decode: invalid value")
-		}
-
-		out[i] = byte(n)
+	if len(nums) != 1 || nums[0] < 0 {
+		return "", fmt.Errorf("HashID decode: invalid value")
 	}
 
-	return string(out), nil
+	return base62.Encode(uint64(nums[0])), nil
 }

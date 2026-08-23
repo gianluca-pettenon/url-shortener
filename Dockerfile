@@ -4,7 +4,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o shortener ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o shortener ./cmd/shortener
 
 FROM alpine:3.23.5
 RUN apk add --no-cache ca-certificates

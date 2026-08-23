@@ -13,7 +13,7 @@ migrate:
 		$(IMAGE) -path /migrations -database "$(URL)" up
 
 up:
-	$(COMPOSE) up -d postgres redis
+	$(COMPOSE) up -d
 
 down:
 	$(COMPOSE) down

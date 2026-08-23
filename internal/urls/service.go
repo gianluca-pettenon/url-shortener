@@ -44,13 +44,8 @@ func (s *Service) Create(ctx context.Context, rawURL string) (string, error) {
 	}
 
 	encoded := base62.Encode(id)
-	code, err := hashid.Encode(encoded, s.salt)
 
-	if err != nil {
-		return "", err
-	}
-
-	return code, nil
+	return hashid.Encode(encoded, s.salt)
 }
 
 func (s *Service) Resolve(ctx context.Context, code string) (string, error) {
@@ -73,6 +68,10 @@ func (s *Service) Resolve(ctx context.Context, code string) (string, error) {
 	}
 
 	return u.OriginalURL, nil
+}
+
+func (s *Service) Code(id uint64) (string, error) {
+	return hashid.Encode(base62.Encode(id), s.salt)
 }
 
 func (s *Service) List(ctx context.Context) ([]URL, error) {
