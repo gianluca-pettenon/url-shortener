@@ -5,7 +5,7 @@ A Go CLI that shortens URLs. Redis issues a unique ID, the short code is derived
 ## Flow
 
 ```mermaid
-flowchart TD
+flowchart LR
     A[Original URL] --> B[Validate http/https]
     B --> C[Redis INCR]
     C --> D[Unique ID]
