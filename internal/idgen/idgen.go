@@ -29,11 +29,27 @@ func (g *Generator) Init(ctx context.Context) error {
 }
 
 func (g *Generator) Next(ctx context.Context) (uint64, error) {
-	n, err := g.rdb.Incr(ctx, CounterKey).Result()
+	first, _, err := g.NextN(ctx, 1)
 
 	if err != nil {
-		return 0, fmt.Errorf("Incr counter: %w", err)
+		return 0, err
 	}
 
-	return uint64(n), nil
+	return first, nil
+}
+
+func (g *Generator) NextN(ctx context.Context, n int) (uint64, uint64, error) {
+	if n < 1 {
+		return 0, 0, fmt.Errorf("Incr counter: n must be at least 1")
+	}
+
+	last, err := g.rdb.IncrBy(ctx, CounterKey, int64(n)).Result()
+
+	if err != nil {
+		return 0, 0, fmt.Errorf("Incr counter: %w", err)
+	}
+
+	first := uint64(last) - uint64(n) + 1
+
+	return first, uint64(last), nil
 }

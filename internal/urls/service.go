@@ -3,6 +3,7 @@ package urls
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -72,6 +73,30 @@ func (s *Service) Resolve(ctx context.Context, code string) (string, error) {
 
 func (s *Service) Code(id uint64) (string, error) {
 	return hashid.Encode(base62.Encode(id), s.salt)
+}
+
+func (s *Service) CreateMany(ctx context.Context, rawURL string, n int) (uint64, uint64, error) {
+	if n < 1 {
+		return 0, 0, fmt.Errorf("times must be at least 1")
+	}
+
+	original, err := normalizeURL(rawURL)
+
+	if err != nil {
+		return 0, 0, err
+	}
+
+	first, last, err := s.ids.NextN(ctx, n)
+
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if err := s.repo.InsertRange(ctx, first, last, original); err != nil {
+		return 0, 0, err
+	}
+
+	return first, last, nil
 }
 
 func (s *Service) List(ctx context.Context) ([]URL, error) {

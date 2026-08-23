@@ -25,7 +25,15 @@ func shortenCmd() *cobra.Command {
 			}
 
 			return withService(cmd, func(svc *urls.Service) error {
-				return createMany(cmd, svc, raw, 1)
+				code, err := svc.Create(cmd.Context(), raw)
+
+				if err != nil {
+					return err
+				}
+
+				fmt.Fprintf(cmd.OutOrStdout(), "code: %s\n", code)
+
+				return nil
 			})
 		},
 	}
@@ -51,7 +59,40 @@ func loadTestCmd() *cobra.Command {
 			}
 
 			return withService(cmd, func(svc *urls.Service) error {
-				return createMany(cmd, svc, raw, n)
+				start := time.Now()
+				first, last, err := svc.CreateMany(cmd.Context(), raw, n)
+
+				if err != nil {
+					return err
+				}
+
+				elapsed := time.Since(start)
+				secs := elapsed.Seconds()
+
+				if secs <= 0 {
+					secs = 0.001
+				}
+
+				firstCode, err := svc.Code(first)
+
+				if err != nil {
+					return err
+				}
+
+				lastCode, err := svc.Code(last)
+
+				if err != nil {
+					return err
+				}
+
+				fmt.Fprintf(cmd.OutOrStdout(), "First: %s\nLast: %s\n", firstCode, lastCode)
+				fmt.Fprintf(cmd.ErrOrStderr(), "%d ok in %s (%.0f/s)\n",
+					n,
+					elapsed.Round(time.Millisecond),
+					float64(n)/secs,
+				)
+
+				return nil
 			})
 		},
 	}
@@ -106,43 +147,6 @@ func withService(cmd *cobra.Command, fn func(*urls.Service) error) error {
 	return fn(svc)
 }
 
-func createMany(cmd *cobra.Command, svc *urls.Service, raw string, times int) error {
-	ctx := cmd.Context()
-	out := cmd.OutOrStdout()
-	start := time.Now()
-
-	for i := range times {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-
-		code, err := svc.Create(ctx, raw)
-
-		if err != nil {
-			return fmt.Errorf("iteration %d: %w", i+1, err)
-		}
-
-		fmt.Fprintf(out, "code: %s\n", code)
-	}
-
-	if times > 1 {
-		elapsed := time.Since(start)
-		secs := elapsed.Seconds()
-
-		if secs <= 0 {
-			secs = 0.001
-		}
-
-		fmt.Fprintf(cmd.ErrOrStderr(), "%d ok in %s (%.0f/s)\n",
-			times,
-			elapsed.Round(time.Millisecond),
-			float64(times)/secs,
-		)
-	}
-
-	return nil
-}
-
 func prompt(cmd *cobra.Command, in *bufio.Reader, label string) (string, error) {
 	fmt.Fprint(cmd.OutOrStdout(), label)
 	raw, err := in.ReadString('\n')
@@ -155,7 +159,7 @@ func prompt(cmd *cobra.Command, in *bufio.Reader, label string) (string, error) 
 }
 
 func promptTimes(cmd *cobra.Command, in *bufio.Reader) (int, error) {
-	raw, err := prompt(cmd, in, "times: ")
+	raw, err := prompt(cmd, in, "Times: ")
 
 	if err != nil {
 		return 0, err
