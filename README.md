@@ -34,6 +34,7 @@ make migrate
 make image
 
 make shorten   # prompts for a URL, prints the code
+make load-test # prompts for a URL and how many times to shorten it
 make list      # lists code, timestamp, and original URL
 make down
 ```
