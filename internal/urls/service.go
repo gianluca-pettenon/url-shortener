@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gianluca-pettenon/url-shortener/internal/base62"
+	"github.com/gianluca-pettenon/url-shortener/internal/hashid"
 	"github.com/gianluca-pettenon/url-shortener/internal/idgen"
 )
 
@@ -18,10 +19,11 @@ var (
 type Service struct {
 	ids  *idgen.Generator
 	repo *Repository
+	salt string
 }
 
-func NewService(ids *idgen.Generator, repo *Repository) *Service {
-	return &Service{ids: ids, repo: repo}
+func NewService(ids *idgen.Generator, repo *Repository, salt string) *Service {
+	return &Service{ids: ids, repo: repo, salt: salt}
 }
 
 func (s *Service) Create(ctx context.Context, rawURL string) (string, error) {
@@ -41,11 +43,24 @@ func (s *Service) Create(ctx context.Context, rawURL string) (string, error) {
 		return "", err
 	}
 
-	return base62.Encode(id), nil
+	encoded := base62.Encode(id)
+	code, err := hashid.Encode(encoded, s.salt)
+
+	if err != nil {
+		return "", err
+	}
+
+	return code, nil
 }
 
 func (s *Service) Resolve(ctx context.Context, code string) (string, error) {
-	id, err := base62.Decode(code)
+	encoded, err := hashid.Decode(code, s.salt)
+
+	if err != nil {
+		return "", ErrInvalidCode
+	}
+
+	id, err := base62.Decode(encoded)
 
 	if err != nil {
 		return "", ErrInvalidCode

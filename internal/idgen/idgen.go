@@ -9,7 +9,7 @@ import (
 
 const (
 	CounterKey = "url:counter"
-	Offset     = uint64(62 * 62 * 62 * 62 * 62) // 62^5 = 916132832
+	Offset     = uint64(15_000_000)
 )
 
 type Generator struct {
