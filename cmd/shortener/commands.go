@@ -99,18 +99,24 @@ func loadTestCmd() *cobra.Command {
 }
 
 func listCmd() *cobra.Command {
-	return &cobra.Command{
+	var limit int
+
+	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "List shortened URLs",
+		Short: "List the most recent shortened URLs",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if limit < 1 || limit > urls.MaxListLimit {
+				return fmt.Errorf("Limit must be an integer from 1 to %d", urls.MaxListLimit)
+			}
+
 			return withService(cmd, func(svc *urls.Service) error {
-				items, err := svc.List(cmd.Context())
+				items, total, err := svc.List(cmd.Context(), limit)
 
 				if err != nil {
 					return err
 				}
 
-				if len(items) == 0 {
+				if total == 0 {
 					fmt.Fprintln(cmd.OutOrStdout(), "No shortened URLs")
 					return nil
 				}
@@ -129,10 +135,16 @@ func listCmd() *cobra.Command {
 					)
 				}
 
+				fmt.Fprintf(cmd.ErrOrStderr(), "Showing %d of %d\n", len(items), total)
+
 				return nil
 			})
 		},
 	}
+
+	cmd.Flags().IntVarP(&limit, "Limit", "n", urls.DefaultListLimit, "How many recent URLs to print")
+
+	return cmd
 }
 
 func withService(cmd *cobra.Command, fn func(*urls.Service) error) error {
@@ -167,8 +179,8 @@ func promptTimes(cmd *cobra.Command, in *bufio.Reader) (int, error) {
 
 	n, err := strconv.Atoi(raw)
 
-	if err != nil || n < 1 {
-		return 0, fmt.Errorf("times must be an integer >= 1")
+	if err != nil || n < 1 || n > urls.MaxCreateMany {
+		return 0, fmt.Errorf("Times must be an integer from 1 to %d", urls.MaxCreateMany)
 	}
 
 	return n, nil

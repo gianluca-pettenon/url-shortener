@@ -12,6 +12,12 @@ import (
 	"github.com/gianluca-pettenon/url-shortener/internal/idgen"
 )
 
+const (
+	MaxCreateMany    = 10_000_000
+	DefaultListLimit = 50
+	MaxListLimit     = 1_000
+)
+
 var (
 	ErrInvalidURL  = errors.New("Invalid URL")
 	ErrInvalidCode = errors.New("Invalid Short Code")
@@ -76,8 +82,8 @@ func (s *Service) Code(id uint64) (string, error) {
 }
 
 func (s *Service) CreateMany(ctx context.Context, rawURL string, n int) (uint64, uint64, error) {
-	if n < 1 {
-		return 0, 0, fmt.Errorf("times must be at least 1")
+	if n < 1 || n > MaxCreateMany {
+		return 0, 0, fmt.Errorf("Times must be an integer from 1 to %d", MaxCreateMany)
 	}
 
 	original, err := normalizeURL(rawURL)
@@ -99,8 +105,24 @@ func (s *Service) CreateMany(ctx context.Context, rawURL string, n int) (uint64,
 	return first, last, nil
 }
 
-func (s *Service) List(ctx context.Context) ([]URL, error) {
-	return s.repo.List(ctx)
+func (s *Service) List(ctx context.Context, limit int) ([]URL, int64, error) {
+	if limit < 1 || limit > MaxListLimit {
+		return nil, 0, fmt.Errorf("Limit must be an integer from 1 to %d", MaxListLimit)
+	}
+
+	total, err := s.repo.Count(ctx)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	items, err := s.repo.List(ctx, limit)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return items, total, nil
 }
 
 func normalizeURL(raw string) (string, error) {

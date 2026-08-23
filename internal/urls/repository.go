@@ -69,8 +69,8 @@ func (r *Repository) GetByID(ctx context.Context, id uint64) (URL, error) {
 	return u, nil
 }
 
-func (r *Repository) List(ctx context.Context) ([]URL, error) {
-	rows, err := r.pool.Query(ctx, `SELECT id, original_url, created_at FROM urls ORDER BY created_at DESC`)
+func (r *Repository) List(ctx context.Context, limit int) ([]URL, error) {
+	rows, err := r.pool.Query(ctx, `SELECT id, original_url, created_at FROM urls ORDER BY created_at DESC LIMIT $1`, limit)
 
 	if err != nil {
 		return nil, fmt.Errorf("List URLs: %w", err)
@@ -78,7 +78,8 @@ func (r *Repository) List(ctx context.Context) ([]URL, error) {
 
 	defer rows.Close()
 
-	var list []URL
+	list := make([]URL, 0, limit)
+
 	for rows.Next() {
 		var u URL
 
@@ -94,4 +95,14 @@ func (r *Repository) List(ctx context.Context) ([]URL, error) {
 	}
 
 	return list, nil
+}
+
+func (r *Repository) Count(ctx context.Context) (int64, error) {
+	var n int64
+
+	if err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM urls`).Scan(&n); err != nil {
+		return 0, fmt.Errorf("Count URLs: %w", err)
+	}
+
+	return n, nil
 }
