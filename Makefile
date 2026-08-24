@@ -19,13 +19,13 @@ down:
 	$(COMPOSE) down
 
 image:
-	$(COMPOSE) --profile cli build url
+	$(COMPOSE) build url-shortener
 
 shorten:
-	$(COMPOSE) --profile cli run --rm url ./shortener shorten
+	$(COMPOSE) exec -it url-shortener ./shortener shorten
 
 load-test:
-	$(COMPOSE) --profile cli run --rm url ./shortener load-test
+	$(COMPOSE) exec -it url-shortener ./shortener load-test
 
 list:
-	$(COMPOSE) --profile cli run --rm url ./shortener list
+	$(COMPOSE) exec url-shortener ./shortener list

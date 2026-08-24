@@ -10,6 +10,6 @@ FROM alpine:3.24.1
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=builder /app/shortener .
-EXPOSE 8080
+EXPOSE 80
 
-CMD ["./shortener"]
+CMD ["./shortener", "serve"]

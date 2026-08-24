@@ -45,3 +45,25 @@ func open(ctx context.Context) (*urls.Service, func(), error) {
 		_ = ids.Close()
 	}, nil
 }
+
+func openRead(ctx context.Context) (*urls.Service, func(), error) {
+	pool, err := postgres.NewPool(ctx, os.Getenv("DATABASE_URL"))
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	svc, err := urls.NewService(nil, urls.NewRepository(pool), os.Getenv("HASHIDS_SALT"))
+
+	if err != nil {
+		pool.Close()
+
+		return nil, nil, err
+	}
+
+	return svc, pool.Close, nil
+}
+
+func shortURL(code string) string {
+	return os.Getenv("APP_DOMAIN") + "/" + code
+}

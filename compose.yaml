@@ -28,34 +28,27 @@ services:
     volumes:
       - redisdata:/data
 
-  url:
-    container_name: url
+  url-shortener:
+    container_name: url-shortener
     build:
       context: .
-    profiles: ["cli"]
-    stdin_open: true
-    tty: true
+    restart: unless-stopped
+    command: ["./shortener", "serve"]
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
+    env_file: .env
     environment:
       DATABASE_URL: postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:$POSTGRES_PORT/$POSTGRES_DB?sslmode=disable
-      REDIS_URL: $REDIS_URL
-      HASHIDS_SALT: $HASHIDS_SALT
-      APP_DOMAIN: shortener.local
-
-  dns:
-    image: coredns/coredns:1.14.7
-    container_name: dns
-    restart: unless-stopped
-    volumes:
-      - ./Corefile:/Corefile
-    command: -conf /Corefile
+      APP_PORT: "80"
     ports:
-      - "53:53/udp"
-      - "53:53/tcp"
+      - "80:80"
+    networks:
+      default:
+        aliases:
+          - $APP_DOMAIN
 
 volumes:
   pgdata:

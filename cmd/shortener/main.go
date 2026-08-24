@@ -17,12 +17,12 @@ func main() {
 
 	root := &cobra.Command{
 		Use:           "shortener",
-		Short:         "Shorten, load-test, and list URLs",
+		Short:         "Shorten, redirect, load-test, and list URLs",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
 
-	root.AddCommand(shortenCmd(), loadTestCmd(), listCmd())
+	root.AddCommand(shortenCmd(), loadTestCmd(), listCmd(), serveCmd())
 
 	if err := root.ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err)

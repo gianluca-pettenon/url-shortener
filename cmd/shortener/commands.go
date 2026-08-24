@@ -31,7 +31,7 @@ func shortenCmd() *cobra.Command {
 					return err
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "code: %s\n", code)
+				fmt.Fprintf(cmd.OutOrStdout(), "%s\n", shortURL(code))
 
 				return nil
 			})
@@ -73,7 +73,7 @@ func loadTestCmd() *cobra.Command {
 					secs = 0.001
 				}
 
-				fmt.Fprintf(cmd.OutOrStdout(), "First: %s\nLast: %s\n", firstCode, lastCode)
+				fmt.Fprintf(cmd.OutOrStdout(), "First: %s\nLast: %s\n", shortURL(firstCode), shortURL(lastCode))
 				fmt.Fprintf(cmd.ErrOrStderr(), "%d ok in %s (%.0f/s)\n",
 					n,
 					elapsed.Round(time.Millisecond),
@@ -111,7 +111,7 @@ func listCmd() *cobra.Command {
 
 				for _, u := range items {
 					fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\n",
-						u.ID,
+						shortURL(u.ID),
 						u.CreatedAt.Format("2006-01-02 15:04"),
 						u.OriginalURL,
 					)
