@@ -62,6 +62,8 @@ That kind of lookup would be a bottleneck and a source of contention in a distri
 
 ## Usage
 
+[Docker](https://docs.docker.com/get-docker/) is required.
+
 Copy `env.local` to `.env` and set `POSTGRES_*`, `REDIS_URL`, and a long random `HASHIDS_SALT`.
 
 ```bash
