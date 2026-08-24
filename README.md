@@ -5,22 +5,23 @@ A Go CLI that shortens URLs. Redis issues a unique numeric ID to avoid collision
 ## Flow
 
 ```mermaid
-flowchart TB
+flowchart LR
     subgraph create["Create"]
-        direction LR
-        A[Original URL] --> B[Validate http/https]
+        A[Original URL] --> B[Validate  URL]
         B --> C[Redis INCR]
         C --> D[Unique ID]
         D --> E[Hashids + salt]
         E --> F[Short code]
         F --> G["INSERT urls.id"]
     end
+```
 
+```mermaid
+flowchart LR
     subgraph read["Read"]
-        direction LR
-        H["GET /{code}"] --> B{Browser cache}
-        B -->|hit, 2nd+ visit| R[original_url]
-        B -->|miss, 1st visit| J["SELECT urls.id"]
+        H["GET /{code}"] --> I{Browser cache}
+        I -->|hit, 2nd+ visit| R[original_url]
+        I -->|miss, 1st visit| J["SELECT urls.id"]
         J --> K[original_url]
         K --> L["302 Cache-Control 1y"]
         L --> R
