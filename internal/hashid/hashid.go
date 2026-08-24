@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/gianluca-pettenon/url-shortener/internal/base62"
 	"github.com/speps/go-hashids/v2"
 )
 
@@ -13,8 +14,9 @@ type Coder struct {
 
 func New(salt string) (*Coder, error) {
 	data := hashids.NewData()
+	data.Alphabet = base62.Alphabet
 	data.Salt = salt
-	data.MinLength = 4
+	data.MinLength = 0
 
 	hd, err := hashids.NewWithData(data)
 
@@ -37,18 +39,4 @@ func (c *Coder) Encode(id uint64) (string, error) {
 	}
 
 	return code, nil
-}
-
-func (c *Coder) Decode(code string) (uint64, error) {
-	nums, err := c.hd.DecodeWithError(code)
-
-	if err != nil {
-		return 0, fmt.Errorf("HashID decode: %w", err)
-	}
-
-	if len(nums) != 1 || nums[0] < 0 {
-		return 0, fmt.Errorf("HashID decode: invalid value")
-	}
-
-	return uint64(nums[0]), nil
 }
