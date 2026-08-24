@@ -74,7 +74,7 @@ func redirectHandler(svc resolver) http.HandlerFunc {
 
 		original, err := svc.Resolve(r.Context(), code)
 
-		if errors.Is(err, urls.ErrInvalidCode) || errors.Is(err, urls.ErrNotFound) {
+		if errors.Is(err, urls.ErrNotFound) {
 			http.NotFound(w, r)
 			return
 		}

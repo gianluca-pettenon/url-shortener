@@ -5,26 +5,29 @@ A Go CLI that shortens URLs. Redis issues a unique numeric ID to avoid collision
 ## Flow
 
 ```mermaid
-flowchart LR
-    A[Original URL] --> B[Validate http/https]
-    B --> C[Redis INCR]
-    C --> D[Unique ID]
-    D --> E[Hashids + salt]
-    E --> F[Short code]
-    F --> G[INSERT urls.id]
+flowchart TB
+    subgraph create["Create"]
+        direction LR
+        A[Original URL] --> B[Validate http/https]
+        B --> C[Redis INCR]
+        C --> D[Unique ID]
+        D --> E[Hashids + salt]
+        E --> F[Short code]
+        F --> G["INSERT urls.id"]
+    end
+
+    subgraph read["Read"]
+        direction LR
+        H["GET /{code}"] --> B{Browser cache}
+        B -->|hit, 2nd+ visit| R[original_url]
+        B -->|miss, 1st visit| J["SELECT urls.id"]
+        J --> K[original_url]
+        K --> L["302 Cache-Control 1y"]
+        L --> R
+    end
 ```
 
-```mermaid
-flowchart LR
-    H["http://shortener.localhost/{code}"] --> I["HTTP GET /{code}"]
-    I --> J[Memory cache]
-    J -->|miss| K[Decode Hashids]
-    K --> L[Postgres PK lookup]
-    L --> M["302 Location: original_url"]
-    J -->|hit| M
-```
-
-`urls.id` is the short code. Redis never writes to Postgres; it only allocates the next integer. Hashids encodes that `uint64` directly — there is no Base62 step. Redis is not on the resolve path.
+`urls.id` is the short code. Redis never writes to Postgres; it only allocates the next integer. Hashids encodes that `uint64` directly — there is no Base62 step. Read does not decode: it looks up the path code as primary key and returns `302` with a one-year `Cache-Control`. The first visit hits Postgres; later visits are served from the browser cache and never reach the server. Redis and Hashids are not on the resolve path.
 
 ## Layout
 
@@ -32,7 +35,7 @@ flowchart LR
 cmd/shortener/      CLI (Cobra), HTTP serve, and composition root
 internal/urls/      domain: validate, encode, persist, resolve
 internal/idgen/     Redis INCR — unique uint64, nothing else
-internal/hashid/    uint64 ↔ short code (Hashids + HASHIDS_SALT)
+internal/hashid/    uint64 → short code (Hashids + HASHIDS_SALT)
 internal/postgres/  connection pool
 migrations/         golang-migrate SQL
 ```

@@ -17,10 +17,7 @@ const (
 	MaxListLimit     = 1_000
 )
 
-var (
-	ErrInvalidURL  = errors.New("Invalid URL")
-	ErrInvalidCode = errors.New("Invalid Short Code")
-)
+var ErrInvalidURL = errors.New("Invalid URL")
 
 type Service struct {
 	ids   *idgen.Generator
@@ -65,10 +62,6 @@ func (s *Service) Create(ctx context.Context, rawURL string) (string, error) {
 }
 
 func (s *Service) Resolve(ctx context.Context, code string) (string, error) {
-	if _, err := s.coder.Decode(code); err != nil {
-		return "", ErrInvalidCode
-	}
-
 	u, err := s.repo.GetByID(ctx, code)
 
 	if err != nil {
