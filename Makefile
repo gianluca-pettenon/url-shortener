@@ -5,7 +5,7 @@ COMPOSE := docker compose
 IMAGE   := migrate/migrate:v4.19.1
 URL     := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@127.0.0.1:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
 
-.PHONY: migrate up down image shorten list load-test
+.PHONY: migrate up down image help shorten list load-test
 
 migrate:
 	$(COMPOSE) up -d --wait postgres
@@ -20,6 +20,9 @@ down:
 
 image:
 	$(COMPOSE) build url-shortener
+
+help:
+	$(COMPOSE) exec url-shortener ./shortener --help
 
 shorten:
 	$(COMPOSE) exec -it url-shortener ./shortener shorten

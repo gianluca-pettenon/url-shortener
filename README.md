@@ -71,8 +71,9 @@ make up
 make migrate
 make image
 
+make help       # prints CLI usage
 make shorten    # prompts for a URL, prints http://shortener.localhost/{code}
 make load-test  # prompts for a URL and how many times to shorten it
-make list       # lists the 50 most recent codes
+make list       # lists the 20 most recent codes
 make down       # stops containers; volumes (data) stay
 ```

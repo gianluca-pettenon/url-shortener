@@ -13,7 +13,7 @@ import (
 
 const (
 	MaxCreateMany    = 10_000_000
-	DefaultListLimit = 50
+	DefaultListLimit = 20
 	MaxListLimit     = 1_000
 )
 
