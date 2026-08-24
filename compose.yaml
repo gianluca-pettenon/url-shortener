@@ -41,7 +41,7 @@ services:
         condition: service_started
     env_file: .env
     environment:
-      DATABASE_URL: postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:$POSTGRES_PORT/$POSTGRES_DB?sslmode=disable
+      DATABASE_URL: postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:$POSTGRES_PORT/$POSTGRES_DB?sslmode=disable&pool_max_conns=32
       APP_PORT: "80"
     ports:
       - "80:80"
