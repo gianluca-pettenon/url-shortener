@@ -16,8 +16,30 @@ type Generator struct {
 	rdb *redis.Client
 }
 
+func Dial(ctx context.Context, redisURL string) (*Generator, error) {
+	opt, err := redis.ParseURL(redisURL)
+
+	if err != nil {
+		return nil, fmt.Errorf("Redis URL: %w", err)
+	}
+
+	rdb := redis.NewClient(opt)
+
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		_ = rdb.Close()
+
+		return nil, fmt.Errorf("Redis ping: %w", err)
+	}
+
+	return New(rdb), nil
+}
+
 func New(rdb *redis.Client) *Generator {
 	return &Generator{rdb: rdb}
+}
+
+func (g *Generator) Close() error {
+	return g.rdb.Close()
 }
 
 func (g *Generator) Init(ctx context.Context) error {

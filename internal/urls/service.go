@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gianluca-pettenon/url-shortener/internal/base62"
 	"github.com/gianluca-pettenon/url-shortener/internal/hashid"
 	"github.com/gianluca-pettenon/url-shortener/internal/idgen"
 )
@@ -151,7 +150,7 @@ func (s *Service) List(ctx context.Context, limit int) ([]URL, int64, error) {
 }
 
 func (s *Service) encode(n uint64) (string, error) {
-	return s.coder.Encode(base62.Encode(n))
+	return s.coder.Encode(n)
 }
 
 func normalizeURL(raw string) (string, error) {

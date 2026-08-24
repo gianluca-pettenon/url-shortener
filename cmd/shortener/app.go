@@ -4,31 +4,29 @@ import (
 	"context"
 	"os"
 
-	"github.com/gianluca-pettenon/url-shortener/internal/db"
 	"github.com/gianluca-pettenon/url-shortener/internal/idgen"
+	"github.com/gianluca-pettenon/url-shortener/internal/postgres"
 	"github.com/gianluca-pettenon/url-shortener/internal/urls"
 )
 
 func open(ctx context.Context) (*urls.Service, func(), error) {
-	pool, err := db.NewPool(ctx, os.Getenv("DATABASE_URL"))
+	pool, err := postgres.NewPool(ctx, os.Getenv("DATABASE_URL"))
 
 	if err != nil {
 		return nil, nil, err
 	}
 
-	rdb, err := db.NewRedis(ctx, os.Getenv("REDIS_URL"))
+	ids, err := idgen.Dial(ctx, os.Getenv("REDIS_URL"))
 
 	if err != nil {
 		pool.Close()
 
 		return nil, nil, err
 	}
-
-	ids := idgen.New(rdb)
 
 	if err := ids.Init(ctx); err != nil {
 		pool.Close()
-		_ = rdb.Close()
+		_ = ids.Close()
 
 		return nil, nil, err
 	}
@@ -37,13 +35,13 @@ func open(ctx context.Context) (*urls.Service, func(), error) {
 
 	if err != nil {
 		pool.Close()
-		_ = rdb.Close()
+		_ = ids.Close()
 
 		return nil, nil, err
 	}
 
 	return svc, func() {
 		pool.Close()
-		_ = rdb.Close()
+		_ = ids.Close()
 	}, nil
 }

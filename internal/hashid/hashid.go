@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/gianluca-pettenon/url-shortener/internal/base62"
 	"github.com/speps/go-hashids/v2"
 )
 
@@ -26,13 +25,7 @@ func New(salt string) (*Coder, error) {
 	return &Coder{hd: hd}, nil
 }
 
-func (c *Coder) Encode(base62Value string) (string, error) {
-	id, err := base62.Decode(base62Value)
-
-	if err != nil {
-		return "", fmt.Errorf("HashID encode: %w", err)
-	}
-
+func (c *Coder) Encode(id uint64) (string, error) {
 	if id > uint64(math.MaxInt) {
 		return "", fmt.Errorf("HashID encode: value out of range")
 	}
@@ -46,16 +39,16 @@ func (c *Coder) Encode(base62Value string) (string, error) {
 	return code, nil
 }
 
-func (c *Coder) Decode(code string) (string, error) {
+func (c *Coder) Decode(code string) (uint64, error) {
 	nums, err := c.hd.DecodeWithError(code)
 
 	if err != nil {
-		return "", fmt.Errorf("HashID decode: %w", err)
+		return 0, fmt.Errorf("HashID decode: %w", err)
 	}
 
 	if len(nums) != 1 || nums[0] < 0 {
-		return "", fmt.Errorf("HashID decode: invalid value")
+		return 0, fmt.Errorf("HashID decode: invalid value")
 	}
 
-	return base62.Encode(uint64(nums[0])), nil
+	return uint64(nums[0]), nil
 }
