@@ -33,7 +33,16 @@ func open(ctx context.Context) (*urls.Service, func(), error) {
 		return nil, nil, err
 	}
 
-	return urls.NewService(ids, urls.NewRepository(pool), os.Getenv("HASHIDS_SALT")), func() {
+	svc, err := urls.NewService(ids, urls.NewRepository(pool), os.Getenv("HASHIDS_SALT"))
+
+	if err != nil {
+		pool.Close()
+		_ = rdb.Close()
+
+		return nil, nil, err
+	}
+
+	return svc, func() {
 		pool.Close()
 		_ = rdb.Close()
 	}, nil

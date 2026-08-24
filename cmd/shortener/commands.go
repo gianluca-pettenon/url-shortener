@@ -60,7 +60,7 @@ func loadTestCmd() *cobra.Command {
 
 			return withService(cmd, func(svc *urls.Service) error {
 				start := time.Now()
-				first, last, err := svc.CreateMany(cmd.Context(), raw, n)
+				firstCode, lastCode, err := svc.CreateMany(cmd.Context(), raw, n)
 
 				if err != nil {
 					return err
@@ -71,18 +71,6 @@ func loadTestCmd() *cobra.Command {
 
 				if secs <= 0 {
 					secs = 0.001
-				}
-
-				firstCode, err := svc.Code(first)
-
-				if err != nil {
-					return err
-				}
-
-				lastCode, err := svc.Code(last)
-
-				if err != nil {
-					return err
 				}
 
 				fmt.Fprintf(cmd.OutOrStdout(), "First: %s\nLast: %s\n", firstCode, lastCode)
@@ -122,14 +110,8 @@ func listCmd() *cobra.Command {
 				}
 
 				for _, u := range items {
-					code, err := svc.Code(u.ID)
-
-					if err != nil {
-						return err
-					}
-
 					fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\n",
-						code,
+						u.ID,
 						u.CreatedAt.Format("2006-01-02 15:04"),
 						u.OriginalURL,
 					)

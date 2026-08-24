@@ -1,0 +1,2 @@
+ALTER TABLE urls
+    ALTER COLUMN id TYPE BIGINT USING id::bigint;

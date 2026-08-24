@@ -1,0 +1,2 @@
+ALTER TABLE urls
+    ALTER COLUMN id TYPE TEXT USING id::text;

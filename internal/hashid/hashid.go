@@ -2,33 +2,42 @@ package hashid
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/gianluca-pettenon/url-shortener/internal/base62"
 	"github.com/speps/go-hashids/v2"
 )
 
-func newHasher(salt string) (*hashids.HashID, error) {
+type Coder struct {
+	hd *hashids.HashID
+}
+
+func New(salt string) (*Coder, error) {
 	data := hashids.NewData()
 	data.Salt = salt
 	data.MinLength = 4
 
-	return hashids.NewWithData(data)
-}
-
-func Encode(base62Value, salt string) (string, error) {
-	hd, err := newHasher(salt)
+	hd, err := hashids.NewWithData(data)
 
 	if err != nil {
-		return "", fmt.Errorf("HashID: %w", err)
+		return nil, fmt.Errorf("HashID: %w", err)
 	}
 
+	return &Coder{hd: hd}, nil
+}
+
+func (c *Coder) Encode(base62Value string) (string, error) {
 	id, err := base62.Decode(base62Value)
 
 	if err != nil {
 		return "", fmt.Errorf("HashID encode: %w", err)
 	}
 
-	code, err := hd.Encode([]int{int(id)})
+	if id > uint64(math.MaxInt) {
+		return "", fmt.Errorf("HashID encode: value out of range")
+	}
+
+	code, err := c.hd.Encode([]int{int(id)})
 
 	if err != nil {
 		return "", fmt.Errorf("HashID encode: %w", err)
@@ -37,14 +46,8 @@ func Encode(base62Value, salt string) (string, error) {
 	return code, nil
 }
 
-func Decode(code, salt string) (string, error) {
-	hd, err := newHasher(salt)
-
-	if err != nil {
-		return "", fmt.Errorf("HashID: %w", err)
-	}
-
-	nums, err := hd.DecodeWithError(code)
+func (c *Coder) Decode(code string) (string, error) {
+	nums, err := c.hd.DecodeWithError(code)
 
 	if err != nil {
 		return "", fmt.Errorf("HashID decode: %w", err)

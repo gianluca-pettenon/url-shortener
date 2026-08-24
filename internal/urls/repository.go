@@ -29,21 +29,23 @@ func (r *Repository) Insert(ctx context.Context, u URL) error {
 	return nil
 }
 
-func (r *Repository) InsertRange(ctx context.Context, first, last uint64, original string) error {
-	id := first
+func (r *Repository) InsertRange(ctx context.Context, original string, next func() (string, bool, error)) error {
 	_, err := r.pool.CopyFrom(
 		ctx,
 		pgx.Identifier{"urls"},
 		[]string{"id", "original_url"},
 		pgx.CopyFromFunc(func() ([]any, error) {
-			if id > last {
+			id, ok, err := next()
+
+			if err != nil {
+				return nil, err
+			}
+
+			if !ok {
 				return nil, nil
 			}
 
-			row := []any{id, original}
-			id++
-
-			return row, nil
+			return []any{id, original}, nil
 		}),
 	)
 
@@ -54,7 +56,7 @@ func (r *Repository) InsertRange(ctx context.Context, first, last uint64, origin
 	return nil
 }
 
-func (r *Repository) GetByID(ctx context.Context, id uint64) (URL, error) {
+func (r *Repository) GetByID(ctx context.Context, id string) (URL, error) {
 	var u URL
 	err := r.pool.QueryRow(ctx, `SELECT id, original_url, created_at FROM urls WHERE id = $1`, id).Scan(&u.ID, &u.OriginalURL, &u.CreatedAt)
 

@@ -1,6 +1,6 @@
 # URL Shortener
 
-A Go CLI that shortens URLs. Redis issues a unique ID, the short code is derived from it (Base62 + Hashids), then the mapping is stored in PostgreSQL. Uniqueness never depends on checking whether a code already exists.
+A Go CLI that shortens URLs. Redis issues a unique numeric ID to avoid collisions under concurrency. That ID is encoded (Base62, then Hashids + salt) and the resulting short code is stored as `urls.id`. Uniqueness never depends on checking whether a code already exists.
 
 ## Flow
 
@@ -9,12 +9,13 @@ flowchart LR
     A[Original URL] --> B[Validate http/https]
     B --> C[Redis INCR]
     C --> D[Unique ID]
-    D --> E[Base62 + Hashids]
-    E --> F[Short code]
-    F --> G[INSERT into PostgreSQL]
+    D --> E[Base62]
+    E --> F[Hashids + salt]
+    F --> G[Short code]
+    G --> H[INSERT urls.id]
 ```
 
-The public code is not a column. It is always derived from `(id, HASHIDS_SALT)`.
+`urls.id` is the short code. Redis never writes to Postgres; it only allocates the next integer.
 
 ## Why this design
 
