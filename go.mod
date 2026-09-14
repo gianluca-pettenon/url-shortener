@@ -3,7 +3,7 @@ module github.com/gianluca-pettenon/url-shortener
 go 1.26.5
 
 require (
-	github.com/jackc/pgx/v5 v5.10.0
+	github.com/jackc/pgx/v5 v5.11.0
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/spf13/cobra v1.10.2
