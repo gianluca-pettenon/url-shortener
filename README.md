@@ -1,7 +1,3 @@
-# URL Shortener
-
-- A `CLI` written in `Go` that shortens `URL`s in a scalable, performant, and **collision-free** way.
-
 ## Flow
 
 **1. Create**
