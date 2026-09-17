@@ -130,3 +130,7 @@ docker compose down -v
 make migrate
 make up
 ```
+
+## Preview
+
+![PREVIEW](./github/assets/preview.jpeg)
