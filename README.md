@@ -133,4 +133,4 @@ make up
 
 ## Preview
 
-![PREVIEW](./github/assets/preview.jpeg)
+![PREVIEW](./.github/assets/preview.jpeg)
